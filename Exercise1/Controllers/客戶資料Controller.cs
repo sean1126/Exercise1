@@ -14,11 +14,57 @@ namespace Exercise1.Controllers
     {
         private 客戶資料Entities db = new 客戶資料Entities();
 
+        public ActionResult SearchCustByAjaxAcitonLink(string searchStr)
+        {
+            var data = searchStr == "" ?
+                        db.客戶資料.Where(p => p.是否已刪除 != true)
+                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            return View("Index", data);
+        }
+
+       
+        public ActionResult SearchCustByActionLink(string keyWord1)
+        {
+            var data = keyWord1 == "" ?
+                        db.客戶資料.Where(p => p.是否已刪除 != true)
+                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(keyWord1));
+            return View("Index", data);
+
+        }
+
+
+
+        [HttpPost]
+        public ActionResult SearchCust(FormCollection form)
+        {
+            string searchStr = form["searchBox"];
+            var data = searchStr == "" ?
+                        db.客戶資料.Where(p => p.是否已刪除 != true)
+                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            
+            return RedirectToAction("Index", data); 
+
+        }
+
+
         public ActionResult GetCustDataFromView()
         {
          
             return View(db.客戶資料View);
         }
+
+        // Post: 客戶資料
+        [HttpPost]
+        public ActionResult Index(string searchStr)
+        {
+
+            var data = 
+                    searchStr == "" ?
+                        db.客戶資料.Where(p => p.是否已刪除 != true)
+                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            return View(data);
+        }
+
 
 
         // GET: 客戶資料
@@ -62,7 +108,6 @@ namespace Exercise1.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-
             return View(客戶資料);
         }
 

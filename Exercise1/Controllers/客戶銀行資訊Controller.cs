@@ -14,6 +14,8 @@ namespace Exercise1.Controllers
     {
         private 客戶資料Entities db = new 客戶資料Entities();
 
+
+
         // GET: 客戶銀行資訊
         public ActionResult Index()
         {
@@ -23,7 +25,15 @@ namespace Exercise1.Controllers
 
             var data = db.客戶銀行資訊.Where(p => p.是否已刪除 != true);
             return View(data);
-       
+        }
+        [HttpPost]
+        public ActionResult Index(string searchStr)
+        {
+            var data =
+                   searchStr == "" ?
+                       db.客戶銀行資訊.Where(p => p.是否已刪除 != true)
+                       : db.客戶銀行資訊.Where(p => p.是否已刪除 != true && p.銀行名稱.Contains(searchStr));
+            return View(data);
         }
 
         // GET: 客戶銀行資訊/Details/5
@@ -57,6 +67,7 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
+                客戶銀行資訊.是否已刪除 = false;
                 db.客戶銀行資訊.Add(客戶銀行資訊);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -91,6 +102,7 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
+                客戶銀行資訊.是否已刪除 = false;
                 db.Entry(客戶銀行資訊).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");

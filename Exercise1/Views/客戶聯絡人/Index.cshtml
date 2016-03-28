@@ -7,7 +7,14 @@
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @using (Html.BeginForm())
+    {
+        @Html.ActionLink("Create New", "Create");
+        <font>|</font>
+        @Html.TextBox("searchStr");
+        <a href="#" onclick="document.forms[0].submit(); return false;">搜尋</a>
+    }
+
 </p>
 <table class="table">
     <tr>

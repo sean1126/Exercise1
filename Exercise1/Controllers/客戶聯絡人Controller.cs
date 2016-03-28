@@ -17,16 +17,21 @@ namespace Exercise1.Controllers
         // GET: 客戶聯絡人
         public ActionResult Index()
         {
-            //var 客戶聯絡人 = db.客戶聯絡人.Include(客 => 客.客戶資料);
-            //return View(客戶聯絡人.ToList());
-            
-
             var data = db.客戶聯絡人.Where(p => p.是否已刪除 != true);
             return View(data);
-
-
-
         }
+
+        [HttpPost]
+        // Post: 客戶聯絡人
+        public ActionResult Index(string searchStr)
+        {
+            var data =
+                   searchStr == "" ?
+                       db.客戶聯絡人.Where(p => p.是否已刪除 != true)
+                       : db.客戶聯絡人.Where(p => p.是否已刪除 != true && p.姓名.Contains(searchStr));
+            return View(data);
+        }
+
 
         // GET: 客戶聯絡人/Details/5
         public ActionResult Details(int? id)
