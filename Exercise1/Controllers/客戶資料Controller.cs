@@ -10,58 +10,23 @@ using Exercise1.Models;
 
 namespace Exercise1.Controllers
 {
-    public class 客戶資料Controller : Controller
+    public class 客戶資料Controller : BaseController
     {
-        private 客戶資料Entities db = new 客戶資料Entities();
-
-        public ActionResult SearchCustByAjaxAcitonLink(string searchStr)
-        {
-            var data = searchStr == "" ?
-                        db.客戶資料.Where(p => p.是否已刪除 != true)
-                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
-            return View("Index", data);
-        }
-
-       
-        public ActionResult SearchCustByActionLink(string keyWord1)
-        {
-            var data = keyWord1 == "" ?
-                        db.客戶資料.Where(p => p.是否已刪除 != true)
-                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(keyWord1));
-            return View("Index", data);
-
-        }
-
-
-
-        [HttpPost]
-        public ActionResult SearchCust(FormCollection form)
-        {
-            string searchStr = form["searchBox"];
-            var data = searchStr == "" ?
-                        db.客戶資料.Where(p => p.是否已刪除 != true)
-                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
-            
-            return RedirectToAction("Index", data); 
-
-        }
-
 
         public ActionResult GetCustDataFromView()
         {
-         
-            return View(db.客戶資料View);
+
+            return View(repoCustView.All());
         }
 
         // Post: 客戶資料
         [HttpPost]
         public ActionResult Index(string searchStr)
         {
-
-            var data = 
-                    searchStr == "" ?
-                        db.客戶資料.Where(p => p.是否已刪除 != true)
-                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
+            var data = searchStr == "" ?
+                            repoCust.Where(p => p.是否已刪除 != true) :
+                            repoCust.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
             return View(data);
         }
 
@@ -70,7 +35,7 @@ namespace Exercise1.Controllers
         // GET: 客戶資料
         public ActionResult Index()
         {
-            var data = db.客戶資料.Where(p => p.是否已刪除 != true);
+            var data = repoCust.All(false);
             return View(data);
         }
 
@@ -81,7 +46,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶資料 客戶資料 = db.客戶資料.Find(id);
+            客戶資料 客戶資料 = repoCust.Find(id.Value);
             if (客戶資料 == null)
             {
                 return HttpNotFound();
@@ -92,7 +57,8 @@ namespace Exercise1.Controllers
         // GET: 客戶資料/Create
         public ActionResult Create()
         {
-            return View();
+            var model = new 客戶資料() { 是否已刪除 = false };//Coding By David
+            return View(model);
         }
 
         // POST: 客戶資料/Create
@@ -102,10 +68,11 @@ namespace Exercise1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除")] 客戶資料 客戶資料)
         {
+
             if (ModelState.IsValid)
             {
-                db.客戶資料.Add(客戶資料);
-                db.SaveChanges();
+                repoCust.Add(客戶資料);
+                repoCust.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
             return View(客戶資料);
@@ -118,7 +85,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶資料 客戶資料 = db.客戶資料.Find(id);
+            客戶資料 客戶資料 = repoCust.Find(id.Value);
             if (客戶資料 == null)
             {
                 return HttpNotFound();
@@ -135,8 +102,18 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
+                #region 原程式碼，不使用Repository時的方法，有東西沒搞懂，先Mark起來 
+                /*
                 db.Entry(客戶資料).State = EntityState.Modified;
                 db.SaveChanges();
+                return RedirectToAction("Index");
+
+                */
+                #endregion
+
+                repoCust.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
+                repoCust.UnitOfWork.Commit();
+
                 return RedirectToAction("Index");
             }
             return View(客戶資料);
@@ -149,7 +126,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶資料 客戶資料 = db.客戶資料.Find(id);
+            客戶資料 客戶資料 = repoCust.Find(id.Value);
             if (客戶資料 == null)
             {
                 return HttpNotFound();
@@ -162,28 +139,63 @@ namespace Exercise1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            //客戶資料 客戶資料 = db.客戶資料.Find(id);
-            //db.客戶資料.Remove(客戶資料);
-            //db.SaveChanges();
-            //return RedirectToAction("Index");
-
-
-            //改為不實際刪除 By Sean
-            var delObj = db.客戶資料.Find(id);
-            delObj.是否已刪除 = true;
-            db.SaveChanges();
-
+            客戶資料 delObj = repoCust.Find(id);
+            repoCust.Delete(delObj);
+            repoCust.UnitOfWork.Commit();
             return RedirectToAction("Index");
-
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                repoCust.UnitOfWork.Context.Dispose();
             }
             base.Dispose(disposing);
         }
+
+
+
+        #region 嘗試用，暫時隱藏
+        /*
+        //public ActionResult SearchCustByAjaxAcitonLink(string searchStr)
+        //{
+        //    var data = searchStr == "" ?
+        //                db.客戶資料.Where(p => p.是否已刪除 != true)
+        //                : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+        //    return View("Index", data);
+        //}
+        [HttpPost]
+        public ActionResult SearchCust(FormCollection form)
+        {
+            string searchStr = form["searchBox"];
+            var data = searchStr == "" ?
+                        db.客戶資料.Where(p => p.是否已刪除 != true)
+                        : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            
+            return RedirectToAction("Index", data); 
+
+        }
+        public ActionResult SearchCustByActionLink(string keyWord1)
+        {
+            // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
+            var data = keyWord1 == "" ?
+                            custRepo.Where(p => p.是否已刪除 != true) :
+                            custRepo.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(keyWord1));
+
+            #region 第一版作法，不使用Repsitoy
+            //var data = keyWord1 == "" ?
+            //            db.客戶資料.Where(p => p.是否已刪除 != true)
+            //            : db.客戶資料.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(keyWord1));
+            #endregion
+
+            return View("Index", data);
+        }
+        */
+
+
+        #endregion
+
+
     }
 }

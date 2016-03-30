@@ -10,10 +10,8 @@ using Exercise1.Models;
 
 namespace Exercise1.Controllers
 {
-    public class 客戶銀行資訊Controller : Controller
+    public class 客戶銀行資訊Controller : BaseController
     {
-        private 客戶資料Entities db = new 客戶資料Entities();
-
 
 
         // GET: 客戶銀行資訊
@@ -23,7 +21,7 @@ namespace Exercise1.Controllers
             // var 客戶銀行資訊 = db.客戶銀行資訊.Include(客 => 客.客戶資料 );
             //return View(客戶銀行資訊.ToList());
 
-            var data = db.客戶銀行資訊.Where(p => p.是否已刪除 != true);
+            var data = repoCustBank.All(false);
             return View(data);
         }
         [HttpPost]
@@ -31,8 +29,8 @@ namespace Exercise1.Controllers
         {
             var data =
                    searchStr == "" ?
-                       db.客戶銀行資訊.Where(p => p.是否已刪除 != true)
-                       : db.客戶銀行資訊.Where(p => p.是否已刪除 != true && p.銀行名稱.Contains(searchStr));
+                    repoCustBank.All(false) :
+                    repoCustBank.All(false).Where(p => p.銀行名稱.Contains(searchStr));
             return View(data);
         }
 
@@ -43,7 +41,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶銀行資訊 客戶銀行資訊 = db.客戶銀行資訊.Find(id);
+            客戶銀行資訊 客戶銀行資訊 = repoCustBank.Find(id.Value);
             if (客戶銀行資訊 == null)
             {
                 return HttpNotFound();
@@ -54,7 +52,7 @@ namespace Exercise1.Controllers
         // GET: 客戶銀行資訊/Create
         public ActionResult Create()
         {
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱");
+            ViewBag.客戶Id = new SelectList(repoCust.All(), "Id", "客戶名稱");
             return View();
         }
 
@@ -67,13 +65,12 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
-                客戶銀行資訊.是否已刪除 = false;
-                db.客戶銀行資訊.Add(客戶銀行資訊);
-                db.SaveChanges();
+                repoCustBank.Add(客戶銀行資訊);
+                repoCustBank.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
+            ViewBag.客戶Id = new SelectList(repoCust.All(), "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
             return View(客戶銀行資訊);
         }
 
@@ -84,12 +81,12 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶銀行資訊 客戶銀行資訊 = db.客戶銀行資訊.Find(id);
+            客戶銀行資訊 客戶銀行資訊 = repoCustBank.Find(id.Value);
             if (客戶銀行資訊 == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
+            ViewBag.客戶Id = new SelectList(repoCust.All(), "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
             return View(客戶銀行資訊);
         }
 
@@ -102,12 +99,11 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
-                客戶銀行資訊.是否已刪除 = false;
-                db.Entry(客戶銀行資訊).State = EntityState.Modified;
-                db.SaveChanges();
+                repoCustBank.UnitOfWork.Context.Entry(客戶銀行資訊).State = EntityState.Modified;
+                repoCustBank.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
+            ViewBag.客戶Id = new SelectList(repoCust.All(), "Id", "客戶名稱", 客戶銀行資訊.客戶Id);
             return View(客戶銀行資訊);
         }
 
@@ -118,7 +114,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶銀行資訊 客戶銀行資訊 = db.客戶銀行資訊.Find(id);
+            客戶銀行資訊 客戶銀行資訊 = repoCustBank.Find(id.Value);
             if (客戶銀行資訊 == null)
             {
                 return HttpNotFound();
@@ -131,25 +127,16 @@ namespace Exercise1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            //客戶銀行資訊 客戶銀行資訊 = db.客戶銀行資訊.Find(id);
-            //db.客戶銀行資訊.Remove(客戶銀行資訊);
-            //db.SaveChanges();
-            //return RedirectToAction("Index");
-
-            //改為不實際刪除 By Sean
-            var delObj = db.客戶銀行資訊.Find(id);
-            delObj.是否已刪除 = true;
-            db.SaveChanges();
-
+            repoCustBank.Delete(id);
+            repoCustBank.UnitOfWork.Commit();
             return RedirectToAction("Index");
-
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                repoCustBank.UnitOfWork.Context.Dispose();
             }
             base.Dispose(disposing);
         }

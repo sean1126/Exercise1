@@ -10,14 +10,14 @@ using Exercise1.Models;
 
 namespace Exercise1.Controllers
 {
-    public class 客戶聯絡人Controller : Controller
+    public class 客戶聯絡人Controller : BaseController
     {
-        private 客戶資料Entities db = new 客戶資料Entities();
+        private 客戶資料Entities dbEntity = new 客戶資料Entities();
 
         // GET: 客戶聯絡人
         public ActionResult Index()
         {
-            var data = db.客戶聯絡人.Where(p => p.是否已刪除 != true);
+            var data = repoContact.All(false);
             return View(data);
         }
 
@@ -26,9 +26,9 @@ namespace Exercise1.Controllers
         public ActionResult Index(string searchStr)
         {
             var data =
-                   searchStr == "" ?
-                       db.客戶聯絡人.Where(p => p.是否已刪除 != true)
-                       : db.客戶聯絡人.Where(p => p.是否已刪除 != true && p.姓名.Contains(searchStr));
+                    searchStr == "" ?
+                        repoContact.All(false) :
+                        repoContact.All(false).Where(p => p.姓名.Contains(searchStr));
             return View(data);
         }
 
@@ -40,7 +40,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = repoContact.Find(id.Value);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
@@ -51,12 +51,13 @@ namespace Exercise1.Controllers
         // GET: 客戶聯絡人/Create
         public ActionResult Create()
         {
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱");
+            ViewBag.客戶Id = new SelectList(dbEntity.客戶資料, "Id", "客戶名稱");
             return View();
         }
 
         // POST: 客戶聯絡人/Create
         // 若要免於過量張貼攻擊，請啟用想要繫結的特定屬性，如需
+
         // 詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -64,12 +65,12 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.客戶聯絡人.Add(客戶聯絡人);
-                db.SaveChanges();
+                repoContact.Add(客戶聯絡人);
+                repoContact.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+            ViewBag.客戶Id = new SelectList(dbEntity.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
 
@@ -80,12 +81,12 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = repoContact.Find(id.Value);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+            ViewBag.客戶Id = new SelectList(repoCust.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
 
@@ -98,11 +99,11 @@ namespace Exercise1.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(客戶聯絡人).State = EntityState.Modified;
-                db.SaveChanges();
+                repoContact.UnitOfWork.Context.Entry(客戶聯絡人).State = EntityState.Modified;
+                repoContact.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+            ViewBag.客戶Id = new SelectList(repoContact.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
 
@@ -113,7 +114,7 @@ namespace Exercise1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = repoContact.Find(id.Value);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
@@ -126,27 +127,16 @@ namespace Exercise1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
-            //db.客戶聯絡人.Remove(客戶聯絡人);
-            //db.SaveChanges();
-            //return RedirectToAction("Index");
-
-            //改為不實際刪除 By Sean
-            var delObj = db.客戶聯絡人.Find(id);
-            delObj.是否已刪除 = true;
-            db.SaveChanges();
-
+            repoContact.Delete(id);
+            repoContact.UnitOfWork.Commit();
             return RedirectToAction("Index");
-            
-
-
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                repoContact.UnitOfWork.Context.Dispose();
             }
             base.Dispose(disposing);
         }
