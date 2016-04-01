@@ -36,6 +36,7 @@ namespace Exercise1.Controllers
         public ActionResult Index()
         {
             var data = repoCust.All(false);
+            ViewBag.類別Id = new SelectList(repoCustCategory.All(),"Id","類別名稱");
             return View(data);
         }
 
@@ -58,6 +59,7 @@ namespace Exercise1.Controllers
         public ActionResult Create()
         {
             var model = new 客戶資料() { 是否已刪除 = false };//Coding By David
+            ViewBag.類別Id = new SelectList(repoCustCategory.All(), "Id", "類別名稱");
             return View(model);
         }
 
@@ -66,7 +68,7 @@ namespace Exercise1.Controllers
         // 詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除")] 客戶資料 客戶資料)
+        public ActionResult Create([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除,類別Id")] 客戶資料 客戶資料)
         {
 
             if (ModelState.IsValid)
@@ -90,6 +92,7 @@ namespace Exercise1.Controllers
             {
                 return HttpNotFound();
             }
+            ViewBag.類別Id = new SelectList(repoCustCategory.All(), "Id", "類別名稱",客戶資料.類別Id);
             return View(客戶資料);
         }
 
@@ -98,7 +101,7 @@ namespace Exercise1.Controllers
         // 詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除")] 客戶資料 客戶資料)
+        public ActionResult Edit([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除,類別Id")] 客戶資料 客戶資料)
         {
             if (ModelState.IsValid)
             {

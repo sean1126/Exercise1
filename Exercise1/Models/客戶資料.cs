@@ -29,10 +29,12 @@ namespace Exercise1.Models
         public string 地址 { get; set; }
         public string Email { get; set; }
         public Nullable<bool> 是否已刪除 { get; set; }
+        public Nullable<int> 類別Id { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<客戶銀行資訊> 客戶銀行資訊 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<客戶聯絡人> 客戶聯絡人 { get; set; }
+        public virtual 客戶類別 客戶類別 { get; set; }
     }
 }

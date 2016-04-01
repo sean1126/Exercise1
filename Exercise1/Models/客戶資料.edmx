@@ -27,6 +27,7 @@
           <Property Name="地址" Type="nvarchar" MaxLength="100" />
           <Property Name="Email" Type="nvarchar" MaxLength="250" />
           <Property Name="是否已刪除" Type="bit" />
+          <Property Name="類別Id" Type="int" />
         </EntityType>
         <EntityType Name="客戶銀行資訊">
           <Key>
@@ -54,6 +55,13 @@
           <Property Name="電話" Type="nvarchar" MaxLength="50" />
           <Property Name="是否已刪除" Type="bit" />
         </EntityType>
+        <EntityType Name="客戶類別">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="類別名稱" Type="nvarchar" MaxLength="50" Nullable="false" />
+        </EntityType>
         <!--產生期間發現錯誤:
 警告 6002: 資料表/檢視 'D:\XING\MVC\EXERCISE1\EXERCISE1\APP_DATA\客戶資料.MDF.dbo.客戶資料View' 未定義主索引鍵。已推斷此索引鍵，並將定義建立成唯讀的資料表/檢視。-->
         <EntityType Name="客戶資料View">
@@ -66,6 +74,18 @@
           <Property Name="聯絡人數量" Type="int" />
           <Property Name="銀行帳戶數量" Type="int" />
         </EntityType>
+        <Association Name="FK_客戶資料_客戶類別">
+          <End Role="客戶類別" Type="Self.客戶類別" Multiplicity="0..1" />
+          <End Role="客戶資料" Type="Self.客戶資料" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="客戶類別">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="客戶資料">
+              <PropertyRef Name="類別Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_客戶銀行資訊_客戶資料">
           <End Role="客戶資料" Type="Self.客戶資料" Multiplicity="1" />
           <End Role="客戶銀行資訊" Type="Self.客戶銀行資訊" Multiplicity="*" />
@@ -95,6 +115,7 @@
           <EntitySet Name="客戶資料" EntityType="Self.客戶資料" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="客戶銀行資訊" EntityType="Self.客戶銀行資訊" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="客戶聯絡人" EntityType="Self.客戶聯絡人" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="客戶類別" EntityType="Self.客戶類別" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="客戶資料View" EntityType="Self.客戶資料View" store:Type="Views" store:Schema="dbo">
             <DefiningQuery>SELECT 
     [客戶資料View].[客戶id] AS [客戶id], 
@@ -103,6 +124,10 @@
     [客戶資料View].[銀行帳戶數量] AS [銀行帳戶數量]
     FROM [dbo].[客戶資料View] AS [客戶資料View]</DefiningQuery>
           </EntitySet>
+          <AssociationSet Name="FK_客戶資料_客戶類別" Association="Self.FK_客戶資料_客戶類別">
+            <End Role="客戶類別" EntitySet="客戶類別" />
+            <End Role="客戶資料" EntitySet="客戶資料" />
+          </AssociationSet>
           <AssociationSet Name="FK_客戶銀行資訊_客戶資料" Association="Self.FK_客戶銀行資訊_客戶資料">
             <End Role="客戶資料" EntitySet="客戶資料" />
             <End Role="客戶銀行資訊" EntitySet="客戶銀行資訊" />
@@ -140,6 +165,8 @@
           <NavigationProperty Name="客戶銀行資訊" Relationship="Self.FK_客戶銀行資訊_客戶資料" FromRole="客戶資料" ToRole="客戶銀行資訊" />
           <NavigationProperty Name="客戶聯絡人" Relationship="Self.FK_客戶聯絡人_客戶資料" FromRole="客戶資料" ToRole="客戶聯絡人" />
           <Property Name="是否已刪除" Type="Boolean" />
+          <Property Name="類別Id" Type="Int32" />
+          <NavigationProperty Name="客戶類別" Relationship="客戶資料Model.FK_客戶資料_客戶類別" FromRole="客戶資料" ToRole="客戶類別" />
         </EntityType>
         <EntityType Name="客戶銀行資訊">
           <Key>
@@ -207,6 +234,11 @@
             <End Role="客戶聯絡人" EntitySet="客戶聯絡人" />
           </AssociationSet>
           <EntitySet Name="客戶資料View" EntityType="客戶資料Model.客戶資料View" />
+          <EntitySet Name="客戶類別" EntityType="客戶資料Model.客戶類別" />
+          <AssociationSet Name="FK_客戶資料_客戶類別" Association="客戶資料Model.FK_客戶資料_客戶類別">
+            <End Role="客戶類別" EntitySet="客戶類別" />
+            <End Role="客戶資料" EntitySet="客戶資料" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="客戶資料View">
           <Key>
@@ -218,6 +250,26 @@
           <Property Name="聯絡人數量" Type="Int32" />
           <Property Name="銀行帳戶數量" Type="Int32" />
         </EntityType>
+        <EntityType Name="客戶類別">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="類別名稱" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="客戶資料" Relationship="客戶資料Model.FK_客戶資料_客戶類別" FromRole="客戶類別" ToRole="客戶資料" />
+        </EntityType>
+        <Association Name="FK_客戶資料_客戶類別">
+          <End Type="客戶資料Model.客戶類別" Role="客戶類別" Multiplicity="0..1" />
+          <End Type="客戶資料Model.客戶資料" Role="客戶資料" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="客戶類別">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="客戶資料">
+              <PropertyRef Name="類別Id" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -238,6 +290,7 @@
           <EntitySetMapping Name="客戶資料">
             <EntityTypeMapping TypeName="客戶資料Model.客戶資料">
               <MappingFragment StoreEntitySet="客戶資料">
+                <ScalarProperty Name="類別Id" ColumnName="類別Id" />
                 <ScalarProperty Name="是否已刪除" ColumnName="是否已刪除" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="客戶名稱" ColumnName="客戶名稱" />
@@ -284,6 +337,14 @@
                 <ScalarProperty Name="聯絡人數量" ColumnName="聯絡人數量" />
                 <ScalarProperty Name="客戶名稱" ColumnName="客戶名稱" />
                 <ScalarProperty Name="客戶id" ColumnName="客戶id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="客戶類別">
+            <EntityTypeMapping TypeName="客戶資料Model.客戶類別">
+              <MappingFragment StoreEntitySet="客戶類別">
+                <ScalarProperty Name="類別名稱" ColumnName="類別名稱" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

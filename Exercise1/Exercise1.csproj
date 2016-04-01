@@ -252,6 +252,9 @@
     <Compile Include="Models\客戶資料View.cs">
       <DependentUpon>客戶資料.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\客戶資料View.Partial.cs">
+      <DependentUpon>EFGeneratePartialClass.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\客戶資料ViewRepository.cs">
       <DependentUpon>IRepository.EF6.tt</DependentUpon>
     </Compile>
@@ -262,6 +265,15 @@
       <DependentUpon>EFGeneratePartialClass.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\客戶銀行資訊Repository.cs">
+      <DependentUpon>IRepository.EF6.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\客戶類別.cs">
+      <DependentUpon>客戶資料.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\客戶類別.Partial.cs">
+      <DependentUpon>EFGeneratePartialClass.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\客戶類別Repository.cs">
       <DependentUpon>IRepository.EF6.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\手機格式驗證Attribute.cs" />
