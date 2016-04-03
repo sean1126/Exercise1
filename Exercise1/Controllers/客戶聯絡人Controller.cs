@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Exercise1.Models;
+using NPOI.HSSF.UserModel;
+using System.IO;
 
 namespace Exercise1.Controllers
 {
@@ -33,6 +35,47 @@ namespace Exercise1.Controllers
         }
 
 
+        public ActionResult Export()
+        {
+            IQueryable<客戶聯絡人> custContact = repoContact.All();
+            MemoryStream ms = ExportDataToExcel(custContact);
+            return File(ms.ToArray(), "application/vnd.ms-excel", "客戶聯絡人.xls");
+        }
+
+        private MemoryStream ExportDataToExcel(IQueryable<客戶聯絡人> custContact)
+        {
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            MemoryStream ms = new MemoryStream();
+            HSSFSheet sheet = (HSSFSheet) workbook.CreateSheet("試算表");
+
+            //設定表頭
+            sheet.CreateRow(0);
+            sheet.GetRow(0).CreateCell(0).SetCellValue("職稱");
+            sheet.GetRow(0).CreateCell(1).SetCellValue("姓名");
+            sheet.GetRow(0).CreateCell(2).SetCellValue("Email");
+            sheet.GetRow(0).CreateCell(3).SetCellValue("手機");
+            sheet.GetRow(0).CreateCell(4).SetCellValue("電話");
+            sheet.GetRow(0).CreateCell(5).SetCellValue("客戶名稱 ");
+
+            //匯出資料
+            int count = 1;
+            foreach (var item in custContact)
+            {
+                sheet.CreateRow(count);
+                sheet.GetRow(count).CreateCell(0).SetCellValue(item.職稱);
+                sheet.GetRow(count).CreateCell(1).SetCellValue(item.姓名);
+                sheet.GetRow(count).CreateCell(2).SetCellValue(item.Email);
+                sheet.GetRow(count).CreateCell(3).SetCellValue(item.手機);
+                sheet.GetRow(count).CreateCell(4).SetCellValue(item.電話);
+                sheet.GetRow(count).CreateCell(5).SetCellValue(item.客戶資料.客戶名稱);
+                count++;
+            }
+            workbook.Write(ms);
+            workbook = null;
+            return ms;
+        }
+
+
         // GET: 客戶聯絡人/Details/5
         public ActionResult Details(int? id)
         {
@@ -47,6 +90,8 @@ namespace Exercise1.Controllers
             }
             return View(客戶聯絡人);
         }
+
+        
 
         // GET: 客戶聯絡人/Create
         public ActionResult Create()
@@ -121,6 +166,9 @@ namespace Exercise1.Controllers
             }
             return View(客戶聯絡人);
         }
+
+
+
 
         // POST: 客戶聯絡人/Delete/5
         [HttpPost, ActionName("Delete")]

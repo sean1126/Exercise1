@@ -13,6 +13,8 @@
         <font>|</font>
         @Html.TextBox("searchStr");
         <a href="#" onclick="document.forms[0].submit(); return false;">搜尋</a>
+        <font>|</font>
+        @Html.ActionLink("匯出", "Export");
     }
 </p>
 <table class="table">
