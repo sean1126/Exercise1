@@ -7,6 +7,8 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Exercise1.Models;
+using NPOI.HSSF.UserModel;
+using System.IO;
 
 namespace Exercise1.Controllers
 {
@@ -21,12 +23,38 @@ namespace Exercise1.Controllers
 
         // Post: 客戶資料
         [HttpPost]
-        public ActionResult Index(string searchStr)
+        public ActionResult Index(string searchStr,int 類別Id)
         {
+            ViewBag.TestStr = searchStr+":"+類別Id;
             // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
-            var data = searchStr == "" ?
-                            repoCust.Where(p => p.是否已刪除 != true) :
-                            repoCust.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            var data = repoCust.All();
+            if (searchStr == "" && 類別Id == 0)
+            {
+                data = repoCust.All();
+            }
+            else if (searchStr == "")
+            {
+                data = repoCust.All().Where(p => p.類別Id == 類別Id);
+            }
+            else if (類別Id == 0)
+            {
+                data = repoCust.All().Where(p => p.客戶名稱.Contains(searchStr));
+
+            }
+            else {
+                data = repoCust.All().Where(p => p.類別Id == 類別Id &&  p.客戶名稱.Contains(searchStr));
+            }
+
+
+            //= searchStr == "" ?
+            //                repoCust.Where(p => p.是否已刪除 != true) :
+            //                repoCust.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
+            SelectListItem allLi = new SelectListItem();
+            allLi.Value = "0";
+            allLi.Text = "全部";
+            List<SelectListItem> mySelectItemList = new List<SelectListItem>(new SelectList(repoCustCategory.All(), "Id", "類別名稱"));
+            mySelectItemList.Insert(0, allLi);
+            ViewBag.類別Id = mySelectItemList;
             return View(data);
         }
 
@@ -36,9 +64,64 @@ namespace Exercise1.Controllers
         public ActionResult Index()
         {
             var data = repoCust.All(false);
-            ViewBag.類別Id = new SelectList(repoCustCategory.All(),"Id","類別名稱");
+            ViewBag.TestStr = "";
+
+            //SelectList categorySl = new SelectList(repoCustCategory.All(), "Id", "類別名稱");
+            //ViewBag.類別Id = new SelectList(repoCustCategory.All(),"Id","類別名稱");
+
+            SelectListItem allLi = new SelectListItem();
+            allLi.Value = "0";
+            allLi.Text = "全部";
+            List<SelectListItem> mySelectItemList = new List<SelectListItem>(new SelectList(repoCustCategory.All(), "Id", "類別名稱"));
+            mySelectItemList.Insert(0, allLi);
+            ViewBag.類別Id = mySelectItemList;
             return View(data);
         }
+
+        public ActionResult Export()
+        {
+            IQueryable<客戶資料> cust = repoCust.All();
+            MemoryStream ms = ExportDataToExcel(cust);
+            return File(ms.ToArray(), "application/vnd.ms-excel", "客戶資料.xls");
+        }
+
+        private MemoryStream ExportDataToExcel(IQueryable<客戶資料> cust)
+        {
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            MemoryStream ms = new MemoryStream();
+            HSSFSheet sheet = (HSSFSheet)workbook.CreateSheet("試算表");
+
+
+            //設定表頭
+            sheet.CreateRow(0);
+            sheet.GetRow(0).CreateCell(0).SetCellValue("客戶類別");
+            sheet.GetRow(0).CreateCell(1).SetCellValue("客戶名稱");
+            sheet.GetRow(0).CreateCell(2).SetCellValue("統一編號");
+            sheet.GetRow(0).CreateCell(3).SetCellValue("電話");
+            sheet.GetRow(0).CreateCell(4).SetCellValue("傳真");
+            sheet.GetRow(0).CreateCell(5).SetCellValue("地址 ");
+            sheet.GetRow(0).CreateCell(6).SetCellValue("Email");
+
+            //匯出資料
+            int count = 1;
+            foreach (var item in cust)
+            {
+                sheet.CreateRow(count);
+                sheet.GetRow(count).CreateCell(0).SetCellValue(item.客戶類別.類別名稱);
+                sheet.GetRow(count).CreateCell(1).SetCellValue(item.客戶名稱);
+                sheet.GetRow(count).CreateCell(2).SetCellValue(item.統一編號);
+                sheet.GetRow(count).CreateCell(3).SetCellValue(item.電話);
+                sheet.GetRow(count).CreateCell(4).SetCellValue(item.傳真);
+                sheet.GetRow(count).CreateCell(5).SetCellValue(item.地址);
+                sheet.GetRow(count).CreateCell(6).SetCellValue(item.Email);
+                count++;
+            }
+            workbook.Write(ms);
+            workbook = null;
+            return ms;
+        }
+
+
 
         // GET: 客戶資料/Details/5
         public ActionResult Details(int? id)
@@ -92,7 +175,13 @@ namespace Exercise1.Controllers
             {
                 return HttpNotFound();
             }
+            IQueryable<客戶聯絡人> custContact = repoContact.Where(p => p.客戶Id == id.Value);
+//            var custContact = repoContact.Where(p => p.客戶Id == id.Value);
+
+
             ViewBag.類別Id = new SelectList(repoCustCategory.All(), "Id", "類別名稱",客戶資料.類別Id);
+            ViewBag.custContact = custContact;
+            ViewBag.custContactCount = custContact.Count();
             return View(客戶資料);
         }
 
@@ -101,7 +190,8 @@ namespace Exercise1.Controllers
         // 詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除,類別Id")] 客戶資料 客戶資料)
+        public ActionResult Edit(IList<BatchUpdateContact> data,
+            [Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email,是否已刪除,類別Id")] 客戶資料 客戶資料)
         {
             if (ModelState.IsValid)
             {
@@ -114,9 +204,16 @@ namespace Exercise1.Controllers
                 */
                 #endregion
 
+                foreach (var item in data)
+                {
+                    var contact = repoContact.Find(item.Id);
+                    contact.職稱 = item.職稱;
+                    contact.手機 = item.手機;
+                    contact.電話 = item.電話;
+                }
+                repoContact.UnitOfWork.Commit();
                 repoCust.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
                 repoCust.UnitOfWork.Commit();
-
                 return RedirectToAction("Index");
             }
             return View(客戶資料);
