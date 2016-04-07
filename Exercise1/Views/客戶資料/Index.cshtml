@@ -12,17 +12,23 @@
     {
         @Html.ActionLink("Create New", "Create");
         <font>|</font>
-        @Html.DropDownList("類別Id", null, new { @onchange = "CallChangefunc(this.value)" })
+        @Html.DropDownList("類別Id", null, new { @onchange = "ChangeActionAndSubmit('Index')" })
         <font>|</font>
         @Html.TextBox("searchStr");
-        <a href="#" onclick="document.forms[0].submit(); return false;">搜尋</a>
+        <a href="#" onclick="ChangeActionAndSubmit('Index')"`>搜尋</a>
         <font>|</font>
-        @Html.ActionLink("匯出", "Export");
+        <a href="#" onclick="ChangeActionAndSubmit('Export')">匯出</a>
 
         <script>
-            function CallChangefunc(val) {
+
+            function ChangeActionAndSubmit(actName)
+            {
+                var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
+                document.forms[0].action = actionStr;
                 document.forms[0].submit();
+                return false;
             }
+
         </script>
     }
 

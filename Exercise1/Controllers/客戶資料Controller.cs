@@ -17,70 +17,43 @@ namespace Exercise1.Controllers
 
         public ActionResult GetCustDataFromView()
         {
-
             return View(repoCustView.All());
         }
+
+        // GET: 客戶資料
+        public ActionResult Index()
+        {
+            var data = repoCust.All(isContainDel:false);
+            ViewBag.類別Id = GenerateCategorySelectList();
+            return View(data);
+        }
+
 
         // Post: 客戶資料
         [HttpPost]
         public ActionResult Index(string searchStr,int 類別Id)
         {
-            ViewBag.TestStr = searchStr+":"+類別Id;
-            // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
-            var data = repoCust.All();
-            if (searchStr == "" && 類別Id == 0)
-            {
-                data = repoCust.All();
-            }
-            else if (searchStr == "")
-            {
-                data = repoCust.All().Where(p => p.類別Id == 類別Id);
-            }
-            else if (類別Id == 0)
-            {
-                data = repoCust.All().Where(p => p.客戶名稱.Contains(searchStr));
-
-            }
-            else {
-                data = repoCust.All().Where(p => p.類別Id == 類別Id &&  p.客戶名稱.Contains(searchStr));
-            }
-
-
-            //= searchStr == "" ?
-            //                repoCust.Where(p => p.是否已刪除 != true) :
-            //                repoCust.Where(p => p.是否已刪除 != true && p.客戶名稱.Contains(searchStr));
-            SelectListItem allLi = new SelectListItem();
-            allLi.Value = "0";
-            allLi.Text = "全部";
-            List<SelectListItem> mySelectItemList = new List<SelectListItem>(new SelectList(repoCustCategory.All(), "Id", "類別名稱"));
-            mySelectItemList.Insert(0, allLi);
-            ViewBag.類別Id = mySelectItemList;
+            var data = repoCust.SearchByCategory(searchStr, 類別Id);  // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
+            ViewBag.類別Id = GenerateCategorySelectList();
             return View(data);
+        }
+
+        private List<SelectListItem> GenerateCategorySelectList()
+        {
+            List<SelectListItem> sl = new List<SelectListItem>(new SelectList(repoCustCategory.All(), "Id", "類別名稱"));
+            SelectListItem li = new SelectListItem();
+            li.Value = "0";
+            li.Text = "全部";
+            sl.Insert(0, li);
+            return sl;
         }
 
 
 
-        // GET: 客戶資料
-        public ActionResult Index()
+
+        public ActionResult Export(string searchStr, int 類別Id)
         {
-            var data = repoCust.All(false);
-            ViewBag.TestStr = "";
-
-            //SelectList categorySl = new SelectList(repoCustCategory.All(), "Id", "類別名稱");
-            //ViewBag.類別Id = new SelectList(repoCustCategory.All(),"Id","類別名稱");
-
-            SelectListItem allLi = new SelectListItem();
-            allLi.Value = "0";
-            allLi.Text = "全部";
-            List<SelectListItem> mySelectItemList = new List<SelectListItem>(new SelectList(repoCustCategory.All(), "Id", "類別名稱"));
-            mySelectItemList.Insert(0, allLi);
-            ViewBag.類別Id = mySelectItemList;
-            return View(data);
-        }
-
-        public ActionResult Export()
-        {
-            IQueryable<客戶資料> cust = repoCust.All();
+            IQueryable<客戶資料> cust = repoCust.SearchByCategory(searchStr, 類別Id);
             MemoryStream ms = ExportDataToExcel(cust);
             return File(ms.ToArray(), "application/vnd.ms-excel", "客戶資料.xls");
         }
@@ -178,10 +151,8 @@ namespace Exercise1.Controllers
             IQueryable<客戶聯絡人> custContact = repoContact.Where(p => p.客戶Id == id.Value);
 //            var custContact = repoContact.Where(p => p.客戶Id == id.Value);
 
-
             ViewBag.類別Id = new SelectList(repoCustCategory.All(), "Id", "類別名稱",客戶資料.類別Id);
             ViewBag.custContact = custContact;
-            ViewBag.custContactCount = custContact.Count();
             return View(客戶資料);
         }
 
@@ -204,16 +175,18 @@ namespace Exercise1.Controllers
                 */
                 #endregion
 
+
+                客戶聯絡人Repository repoContactForCommitWithCust = RepositoryHelper.Get客戶聯絡人Repository(repoCust.UnitOfWork);
+
                 foreach (var item in data)
                 {
-                    var contact = repoContact.Find(item.Id);
+                    var contact = repoContactForCommitWithCust.Find(item.Id);
                     contact.職稱 = item.職稱;
                     contact.手機 = item.手機;
                     contact.電話 = item.電話;
                 }
-                repoContact.UnitOfWork.Commit();
                 repoCust.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
-                repoCust.UnitOfWork.Commit();
+                repoContactForCommitWithCust.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
             return View(客戶資料);

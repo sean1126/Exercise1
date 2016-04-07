@@ -188,6 +188,7 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\TryitController.cs" />
     <Compile Include="Controllers\客戶聯絡人Controller.cs" />
     <Compile Include="Controllers\客戶資料Controller.cs" />
     <Compile Include="Controllers\客戶銀行資訊Controller.cs" />
@@ -393,6 +394,8 @@
     <Content Include="Views\客戶銀行資訊\Index.cshtml" />
     <Content Include="Views\客戶資料\GetCustDataFromView.cshtml" />
     <Content Include="Views\客戶銀行資訊\Export.cshtml" />
+    <Content Include="Views\Tryit\Index.cshtml" />
+    <Content Include="Views\Tryit\DemoInput.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
