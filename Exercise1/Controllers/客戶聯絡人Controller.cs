@@ -25,15 +25,26 @@ namespace Exercise1.Controllers
 
         [HttpPost]
         // Post: 客戶聯絡人
-        public ActionResult Index(string searchStr)
+        public ActionResult Index(string searchStr,string positionName)
         {
-            var data =
-                    searchStr == "" ?
-                        repoContact.All(false) :
-                        repoContact.All(false).Where(p => p.姓名.Contains(searchStr));
+            //var data =
+            //        searchStr == "" ?
+            //            repoContact.All(false) :
+            //            repoContact.All(false).Where(p => p.姓名.Contains(searchStr));
+
+            var data = repoContact.SearchWithPosition(searchStr, positionName);
+            ViewBag.positionName = GeneratePositionSL();
+
+
+
             return View(data);
         }
 
+        private List<SelectListItem> GeneratePositionSL()
+        {
+            List<SelectListItem> positionLi = new List<SelectListItem>(new SelectList(repoContact.GetPosition(), "職稱", "職稱"));
+            return positionLi; 
+        }
 
         public ActionResult Export()
         {
