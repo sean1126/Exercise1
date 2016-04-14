@@ -4,18 +4,32 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
 
+<h2>Index</h2>
+@ViewBag.how
+@using (Html.BeginForm())
+{
 <p>
-    @using (Html.BeginForm())
-    {
-        @Html.ActionLink("Create New", "Create");
+
+        @Html.Hidden("page")
+        @Html.ActionLink("Create New", "Create")
         <font>|</font>
-        @Html.TextBox("searchStr");
-        <a href="#" onclick="document.forms[0].submit(); return false;">搜尋</a>
+        @Html.DropDownList("positionName", null, new { @onchange = "ChangeActionAndSubmit('Index')" })
         <font>|</font>
-        @Html.ActionLink("匯出", "Export");
-    }
+        @Html.TextBox("searchStr")
+        <a href="#" onclick="ChangeActionAndSubmit('Index')">搜尋</a>
+        <font>|</font>
+        @Html.ActionLink("匯出", "Export")
+    <script>
+        function ChangeActionAndSubmit(actName)
+        {
+            var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
+            document.forms[0].action = actionStr;
+            page.value = 1
+            document.forms[0].submit();
+            return false;
+        }
+    </script>
 
 </p>
 <table class="table">
@@ -75,4 +89,28 @@
     </tr>
 }
 
+
 </table>
+
+}
+
+@using PagedList
+@using PagedList.Mvc
+@Html.PagedListPager(Model as IPagedList,
+        p => Url.Action("Index", new { page = p }))
+
+@section scripts {
+    <script>
+        $(function () {
+            $('.pagination a').on('click', function () {
+                var href = $(this).attr("href");
+                var pid = href.substring(href.indexOf('?page=') + 6);
+                alert(pid)
+                document.forms[0].page.value = pid;
+                document.forms[0].submit();
+                return false;
+            });
+        });
+    </script>
+}
+

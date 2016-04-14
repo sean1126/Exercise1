@@ -31,8 +31,9 @@ namespace Exercise1.Controllers
 
         // Post: 客戶資料
         [HttpPost]
-        public ActionResult Index(string searchStr,int 類別Id)
+        public ActionResult Index(string searchStr,int 類別Id,string sortField,string sortBy)
         {
+
             var data = repoCust.SearchByCategory(searchStr, 類別Id);  // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
             ViewBag.類別Id = GenerateCategorySelectList();
             return View(data);
@@ -177,13 +178,18 @@ namespace Exercise1.Controllers
 
 
                 客戶聯絡人Repository repoContactForCommitWithCust = RepositoryHelper.Get客戶聯絡人Repository(repoCust.UnitOfWork);
-
-                foreach (var item in data)
+                if (data != null)
                 {
-                    var contact = repoContactForCommitWithCust.Find(item.Id);
-                    contact.職稱 = item.職稱;
-                    contact.手機 = item.手機;
-                    contact.電話 = item.電話;
+                    foreach (var item in data)
+                    {
+                        var contact = repoContactForCommitWithCust.Find(item.Id);
+                        if (contact != null)
+                        {
+                            contact.職稱 = item.職稱;
+                            contact.手機 = item.手機;
+                            contact.電話 = item.電話;
+                        }
+                    }
                 }
                 repoCust.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
                 repoContactForCommitWithCust.UnitOfWork.Commit();
@@ -216,6 +222,12 @@ namespace Exercise1.Controllers
             repoCust.Delete(delObj);
             repoCust.UnitOfWork.Commit();
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public ActionResult Sort(string sortField,string sortBy)
+        {
+            return View();
         }
 
         protected override void Dispose(bool disposing)

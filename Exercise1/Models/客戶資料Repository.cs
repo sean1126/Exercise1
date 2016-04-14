@@ -37,7 +37,33 @@ namespace Exercise1.Models
         {
             if (searchText == "" && categoryId == 0)
             {
-                return All();
+                return All().OrderBy(p => p.客戶名稱);
+            }
+            else if (categoryId == 0)
+            {
+                return this.Where(p => p.客戶名稱.Contains(searchText));
+            }
+            else if (searchText == "")
+            {
+                return this.Where(p => p.類別Id == categoryId);
+            }
+            else {
+                return this.Where(p => p.類別Id == categoryId && p.客戶名稱.Contains(searchText));
+            }
+        }
+
+
+        /// <summary>
+        /// 根據傳入字串與類別，搜尋客戶資料
+        /// </summary>
+        /// <param name="searchText"></param>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        public IQueryable<客戶資料> SearchByCategory(string searchText, int categoryId, string sortField, string sortBy)
+        {
+            if (searchText == "" && categoryId == 0)
+            {
+                return All().OrderBy(p => p.客戶名稱);
             }
             else if (categoryId == 0)
             {

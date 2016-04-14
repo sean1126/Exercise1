@@ -20,14 +20,25 @@
         <a href="#" onclick="ChangeActionAndSubmit('Export')">匯出</a>
 
         <script>
+    function ChangeActionAndSubmit(actName)
+    {
+        alert(actName)
 
-            function ChangeActionAndSubmit(actName)
+        var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
+        document.forms[0].action = actionStr;
+        document.forms[0].submit();
+        return false;
+    }
+            function Order(fieldName,AscOrDesc)
             {
-                var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
-                document.forms[0].action = actionStr;
+                sortField.value = fieldName;
+                sortBy.value = AscOrDesc;
+                document.forms[0].action ="@Url.Action("Index")";
                 document.forms[0].submit();
-                return false;
+
             }
+
+
 
         </script>
     }
@@ -40,10 +51,14 @@
 
 
 </p>
+@Html.Hidden("sortField","CustName")
+@Html.Hidden("sortBy","Asc")
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.客戶類別)
+            <a href="#" onclick="Order('Category','ASC')">上</a>
+            <a href="#" onclick="Order('Index','DESC')">下</a>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.客戶名稱)

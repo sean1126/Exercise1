@@ -43,6 +43,32 @@ namespace Exercise1.Models
             客戶聯絡人 delObj = this.Find(id);
             this.Delete(delObj);
         }
+
+        internal IQueryable<客戶聯絡人> SearchWithPosition(string searchStr, string positionName)
+        {
+            if (searchStr == "" && positionName == "all")
+            {
+                return this.All(isContainDelete: false);
+            }
+            else if (searchStr == "")
+            {
+                return Where(p => p.職稱 == positionName);
+            }
+            else if (positionName == "all")
+            {
+                return Where(p => p.姓名.Contains(searchStr));
+            }
+            else {
+                return Where(p => p.姓名.Contains(searchStr) && p.職稱 == positionName);
+            }
+        }
+
+        public IQueryable<string> GetPosition()
+        {
+            return  All().Select(p => p.職稱).Distinct();
+
+        }
+
 	}
 
 	public  interface I客戶聯絡人Repository : IRepository<客戶聯絡人>

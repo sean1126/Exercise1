@@ -9,6 +9,8 @@ using System.Web.Mvc;
 using Exercise1.Models;
 using NPOI.HSSF.UserModel;
 using System.IO;
+using PagedList;
+using PagedList.Mvc;
 
 namespace Exercise1.Controllers
 {
@@ -16,25 +18,30 @@ namespace Exercise1.Controllers
     {
         private 客戶資料Entities dbEntity = new 客戶資料Entities();
 
-        // GET: 客戶聯絡人
-        public ActionResult Index()
-        {
-            var data = repoContact.All(false);
-            return View(data);
-        }
 
-        [HttpPost]
+        #region 原始Method,Mark
+        //// GET: 客戶聯絡人
+        //public ActionResult Index()
+        //{
+        //    var data = repoContact.All(false);
+        //    ViewBag.positionName = GeneratePositionSL();
+        //    return View(data);
+        //}
+
+        #endregion
+
         // Post: 客戶聯絡人
-        public ActionResult Index(string searchStr,string positionName)
+        public ActionResult Index(string searchStr="",string positionName="all",int page=1)
         {
             //var data =
             //        searchStr == "" ?
             //            repoContact.All(false) :
             //            repoContact.All(false).Where(p => p.姓名.Contains(searchStr));
 
-            var data = repoContact.SearchWithPosition(searchStr, positionName);
+            var data = repoContact.SearchWithPosition(searchStr, positionName).OrderBy(p => p.客戶Id).ToPagedList(page,1);
             ViewBag.positionName = GeneratePositionSL();
 
+            ViewBag.how = searchStr+":" + positionName +":" +data.Count.ToString();
 
 
             return View(data);
@@ -42,7 +49,16 @@ namespace Exercise1.Controllers
 
         private List<SelectListItem> GeneratePositionSL()
         {
-            List<SelectListItem> positionLi = new List<SelectListItem>(new SelectList(repoContact.GetPosition(), "職稱", "職稱"));
+            List<SelectListItem> positionLi = new List<SelectListItem>(new SelectList(repoContact.GetPosition()));
+            //SelectList positionLi = new SelectList(repoContact.GetPosition());
+           
+
+            SelectListItem allLi = new SelectListItem
+            {
+                Value = "all",
+                Text = "全部"
+            };
+            positionLi.Insert(0, allLi);
             return positionLi; 
         }
 
