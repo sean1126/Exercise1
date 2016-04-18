@@ -19,41 +19,56 @@
         @Html.TextBox("searchStr")
         <a href="#" onclick="ChangeActionAndSubmit('Index')">搜尋</a>
         <font>|</font>
-        @Html.ActionLink("匯出", "Export")
-    <script>
-        function ChangeActionAndSubmit(actName)
-        {
-            var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
-            document.forms[0].action = actionStr;
-            page.value = 1
-            document.forms[0].submit();
-            return false;
-        }
-    </script>
-
+        <a href="#" onclick="ChangeActionAndSubmit('Export')">匯出</a>
+        @Html.Hidden("sortField", "姓名")
+        @Html.Hidden("sortBy", "Asc")
 </p>
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.職稱)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('職稱', 'ASC')">上</a>
+                <a href="#" onclick="Order('職稱', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.姓名)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('姓名', 'ASC')">上</a>
+                <a href="#" onclick="Order('姓名', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Email)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('Email', 'ASC')">上</a>
+                <a href="#" onclick="Order('Email', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.手機)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('手機', 'ASC')">上</a>
+                <a href="#" onclick="Order('手機', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.電話)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('電話', 'ASC')">上</a>
+                <a href="#" onclick="Order('電話', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.是否已刪除)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.客戶資料.客戶名稱)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('客戶資料.客戶名稱', 'ASC')">上</a>
+                <a href="#" onclick="Order('客戶資料.客戶名稱', 'DESC')">下</a>
+            </span>
         </th>
         <th></th>
     </tr>
@@ -111,6 +126,21 @@
                 return false;
             });
         });
+        function ChangeActionAndSubmit(actName)
+        {
+            page.value = 1 //如果改變模式，將分頁設回來第一頁
+            var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
+            document.forms[0].action = actionStr;
+            document.forms[0].submit();
+            return false;
+        }
+        function Order(fieldName, AscOrDesc) {
+            sortField.value = fieldName;
+            sortBy.value = AscOrDesc;
+            document.forms[0].action = "@Url.Action("Index")";
+            document.forms[0].submit();
+            return false;
+        }
     </script>
 }
 

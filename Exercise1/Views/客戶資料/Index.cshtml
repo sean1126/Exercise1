@@ -2,81 +2,73 @@
 
 @{
     ViewBag.Title = "Index";
+    string oldAddr = "I dont want it";
 }
+@oldAddr+"pppp"
 
 <h2>Index</h2>
-
+@using (Html.BeginForm())
+{
 
 <p>
-    @using (Html.BeginForm())
-    {
-        @Html.ActionLink("Create New", "Create");
-        <font>|</font>
-        @Html.DropDownList("類別Id", null, new { @onchange = "ChangeActionAndSubmit('Index')" })
-        <font>|</font>
-        @Html.TextBox("searchStr");
-        <a href="#" onclick="ChangeActionAndSubmit('Index')"`>搜尋</a>
-        <font>|</font>
+        @Html.ActionLink("Create New", "Create") <font>|</font>
+        @Html.DropDownList("類別Id", null, new { @onchange = "ChangeActionAndSubmit('Index')" }) <font>|</font>
+        @Html.TextBox("searchStr") <font>|</font>
+        <a href="#" onclick="ChangeActionAndSubmit('Index')"`>搜尋</a> <font>|</font>
         <a href="#" onclick="ChangeActionAndSubmit('Export')">匯出</a>
-
-        <script>
-    function ChangeActionAndSubmit(actName)
-    {
-        alert(actName)
-
-        var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
-        document.forms[0].action = actionStr;
-        document.forms[0].submit();
-        return false;
-    }
-            function Order(fieldName,AscOrDesc)
-            {
-                sortField.value = fieldName;
-                sortBy.value = AscOrDesc;
-                document.forms[0].action ="@Url.Action("Index")";
-                document.forms[0].submit();
-
-            }
-
-
-
-        </script>
-    }
-
-
-    @*@Html.TextBox("keyWord1")
-        @Html.ActionLink("搜尋", "SearchCustByActionLink", new { keyWord1 = "一等一" })
-            @Ajax.ActionLink("搜尋", "SearchCustByAjaxAcitonLink", new AjaxOptions { HttpMethod = "POST" })
-        @Html.TextBox("keyWord2")*@
-
-
+        @Html.Hidden("sortField", "客戶名稱")
+        @Html.Hidden("sortBy", "Asc")
 </p>
-@Html.Hidden("sortField","CustName")
-@Html.Hidden("sortBy","Asc")
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.客戶類別)
-            <a href="#" onclick="Order('Category','ASC')">上</a>
-            <a href="#" onclick="Order('Index','DESC')">下</a>
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('類別Id','ASC')"  >上</a>
+                <a href="#" onclick="Order('類別Id', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.客戶名稱)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('客戶名稱', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('客戶名稱', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.統一編號)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('統一編號', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('統一編號', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.電話)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('電話', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('電話', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.傳真)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('傳真', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('傳真', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.地址)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('地址', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('地址', 'DESC')">下</a>
+            </span>
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Email)
+            <span style="font-size:xx-small">
+                <a href="#" onclick="Order('Email', 'ASC')" class="">上</a>
+                <a href="#" onclick="Order('Email', 'DESC')">下</a>
+            </span>
         </th>
         @*<th>
                 @Html.DisplayNameFor(model => model.是否已刪除)
@@ -120,3 +112,48 @@
     }
 
 </table>
+
+}
+
+@using PagedList;
+@using PagedList.Mvc;
+@Html.PagedListPager(Model as IPagedList, p => Url.Action("Index",new {page = p}))
+
+
+@section scripts {
+    <script>
+        function ChangeActionAndSubmit(actName)
+        {
+            var actionStr = "@Url.Action("RepStr")".replace("RepStr", actName);
+            document.forms[0].action = actionStr;
+            document.forms[0].submit();
+            return false;
+        }
+        function Order(fieldName,AscOrDesc)
+        {
+            sortField.value = fieldName;
+            sortBy.value = AscOrDesc;
+            document.forms[0].action = "@Url.Action("Index")";
+            document.forms[0].submit();
+            return false;
+            //if (event.target.text == "上") {
+            //    sortBy.value = "ASC";
+            //    event.target.text = "下"
+            //}
+            //else {
+            //    sortBy.value = "DESC";
+            //    event.target.text = "上"
+            //}
+        }
+        $(function () {
+            $('.pagination a').on('click', function () {
+                var href = $(this).attr("href");
+                var pid = href.substring(href.indexOf('?page=') + 6);
+                document.form1.page.value = pid;
+                document.form1.submit();
+                return false;
+            });
+        });
+    </script>
+    }
+

@@ -30,20 +30,11 @@ namespace Exercise1.Controllers
 
         #endregion
 
-        // Post: 客戶聯絡人
-        public ActionResult Index(string searchStr="",string positionName="all",int page=1)
+        // Get: 客戶聯絡人
+        public ActionResult Index(string searchStr="",string positionName="all",string sortField="姓名",string sortBy="ASC",int page=1)
         {
-            //var data =
-            //        searchStr == "" ?
-            //            repoContact.All(false) :
-            //            repoContact.All(false).Where(p => p.姓名.Contains(searchStr));
-
-            var data = repoContact.SearchWithPosition(searchStr, positionName).OrderBy(p => p.客戶Id).ToPagedList(page,1);
+            var data = repoContact.SearchWithPosition(searchStr, positionName,sortField,sortBy).ToPagedList(page,3);
             ViewBag.positionName = GeneratePositionSL();
-
-            ViewBag.how = searchStr+":" + positionName +":" +data.Count.ToString();
-
-
             return View(data);
         }
 
@@ -62,9 +53,9 @@ namespace Exercise1.Controllers
             return positionLi; 
         }
 
-        public ActionResult Export()
+        public ActionResult Export(string searchStr = "", string positionName = "all", string sortField = "姓名", string sortBy = "ASC")
         {
-            IQueryable<客戶聯絡人> custContact = repoContact.All();
+            IQueryable<客戶聯絡人> custContact = repoContact.SearchWithPosition(searchStr, positionName, sortField, sortBy);
             MemoryStream ms = ExportDataToExcel(custContact);
             return File(ms.ToArray(), "application/vnd.ms-excel", "客戶聯絡人.xls");
         }

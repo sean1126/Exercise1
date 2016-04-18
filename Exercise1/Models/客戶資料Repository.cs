@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Collections.Generic;
 	
 namespace Exercise1.Models
@@ -35,21 +36,12 @@ namespace Exercise1.Models
         /// <returns></returns>
         public IQueryable<客戶資料> SearchByCategory(string searchText, int categoryId)
         {
-            if (searchText == "" && categoryId == 0)
-            {
-                return All().OrderBy(p => p.客戶名稱);
-            }
-            else if (categoryId == 0)
-            {
-                return this.Where(p => p.客戶名稱.Contains(searchText));
-            }
-            else if (searchText == "")
-            {
-                return this.Where(p => p.類別Id == categoryId);
-            }
-            else {
-                return this.Where(p => p.類別Id == categoryId && p.客戶名稱.Contains(searchText));
-            }
+            IQueryable<客戶資料> rtnData = All();
+            if (categoryId != 0)
+                rtnData = rtnData.Where(p => p.類別Id == categoryId);
+            if (searchText != "")
+                rtnData = rtnData.Where(p => p.客戶名稱.Contains(searchText));
+            return rtnData;
         }
 
 
@@ -61,21 +53,30 @@ namespace Exercise1.Models
         /// <returns></returns>
         public IQueryable<客戶資料> SearchByCategory(string searchText, int categoryId, string sortField, string sortBy)
         {
-            if (searchText == "" && categoryId == 0)
-            {
-                return All().OrderBy(p => p.客戶名稱);
-            }
-            else if (categoryId == 0)
-            {
-                return this.Where(p => p.客戶名稱.Contains(searchText));
-            }
-            else if (searchText == "")
-            {
-                return this.Where(p => p.類別Id == categoryId);
-            }
-            else {
-                return this.Where(p => p.類別Id == categoryId && p.客戶名稱.Contains(searchText));
-            }
+            IQueryable<客戶資料> rtnData = All();
+
+            //如果需要類別篩選
+            if (categoryId != 0)
+                rtnData = rtnData.Where(p => p.類別Id == categoryId);
+
+            //如果需要搜尋
+            if (searchText != "")
+                rtnData = rtnData.Where(p => p.客戶名稱.Contains(searchText));
+
+            rtnData = rtnData.OrderBy(sortField + " "+ sortBy);
+
+            //switch (sortField)
+            //{
+            //    case "Category":
+            //        rtnData = sortBy == "ASC"? rtnData.OrderBy(p => p.類別Id): rtnData.OrderByDescending(p => p.類別Id);
+            //        break;
+            //    case "CustName":
+            //        rtnData = sortBy == "ASC" ? rtnData.OrderBy(p => p.客戶名稱) : rtnData.OrderByDescending(p => p.客戶名稱);
+            //        break;
+            //    default:
+            //        break;
+            //}
+            return rtnData;
         }
 
 

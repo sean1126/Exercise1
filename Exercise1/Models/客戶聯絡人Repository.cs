@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Collections.Generic;
 	
 namespace Exercise1.Models
@@ -36,6 +37,18 @@ namespace Exercise1.Models
         public override void Delete(客戶聯絡人 delObj)
         {
             delObj.是否已刪除 = true;
+        }
+
+        internal IQueryable<客戶聯絡人> SearchWithPosition(string searchStr, string positionName, string sortField, string sortBy)
+        {
+            IQueryable<客戶聯絡人> rtnData = All();
+
+            if (searchStr != "")
+                rtnData = rtnData.Where(p => p.姓名.Contains(searchStr));
+            if (positionName != "all")
+                rtnData = rtnData.Where(p => p.職稱 == positionName);
+
+            return rtnData.OrderBy(sortField + " " + sortBy);
         }
 
         public void Delete(int id)

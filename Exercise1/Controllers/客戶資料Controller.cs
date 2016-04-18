@@ -9,6 +9,7 @@ using System.Web.Mvc;
 using Exercise1.Models;
 using NPOI.HSSF.UserModel;
 using System.IO;
+using PagedList;
 
 namespace Exercise1.Controllers
 {
@@ -21,20 +22,9 @@ namespace Exercise1.Controllers
         }
 
         // GET: 客戶資料
-        public ActionResult Index()
+        public ActionResult Index(string searchStr = "", int 類別Id = 0, string sortField= "客戶名稱", string sortBy="ASC",int page = 1 )
         {
-            var data = repoCust.All(isContainDel:false);
-            ViewBag.類別Id = GenerateCategorySelectList();
-            return View(data);
-        }
-
-
-        // Post: 客戶資料
-        [HttpPost]
-        public ActionResult Index(string searchStr,int 類別Id,string sortField,string sortBy)
-        {
-
-            var data = repoCust.SearchByCategory(searchStr, 類別Id);  // 如果使用者沒有輸入關鍵字，撈取全部資料，否則進行搜尋
+            var data = repoCust.SearchByCategory(searchStr, 類別Id, sortField, sortBy).ToPagedList(page, 2);
             ViewBag.類別Id = GenerateCategorySelectList();
             return View(data);
         }
@@ -52,9 +42,9 @@ namespace Exercise1.Controllers
 
 
 
-        public ActionResult Export(string searchStr, int 類別Id)
+        public ActionResult Export(string searchStr, int 類別Id, string sortField = "客戶名稱", string sortBy = "ASC")
         {
-            IQueryable<客戶資料> cust = repoCust.SearchByCategory(searchStr, 類別Id);
+            IQueryable<客戶資料> cust = repoCust.SearchByCategory(searchStr, 類別Id, sortField, sortBy);
             MemoryStream ms = ExportDataToExcel(cust);
             return File(ms.ToArray(), "application/vnd.ms-excel", "客戶資料.xls");
         }
